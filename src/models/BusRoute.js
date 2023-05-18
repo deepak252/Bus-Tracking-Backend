@@ -1,15 +1,15 @@
 const mongoose = require("mongoose");
-const { days } = require("../config/constants");
+const { days, regex } = require("../config/constants");
 
 const routeSchema = new mongoose.Schema({
-    routeId : {  //eg. 901_UP, 901_DOWN
+    routeNo : {  //eg. 901_UP, 901_DOWN
         type : String, 
-        required : [true,"Bus Route Id is required"],
+        required : [true,"Route number is required"],
         unique : true
     },
     name : {
         type : String, // eg. Uttam Nagar Terminal
-        required : [true,"Bus Route name is required"],
+        required : [true,"Route name is required"],
     },
     stops : [
         {
@@ -30,14 +30,15 @@ const routeSchema = new mongoose.Schema({
             departureTime : [
                 {
                     type : String,
-                    match : [/^(?:[01]\d|2[0-3]):[0-5]\d$/, "Time must be in 24-hour clock format"]
+                    match : [regex.militaryTime, "Time must be in 24-hour clock format"]
                 }
             ]
         }
     ],
-
-    rating : Number,
-
+    rating : {
+        type : Number,
+        default : 0
+    },
 },{
     timestamps : true
 });

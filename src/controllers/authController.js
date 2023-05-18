@@ -24,8 +24,7 @@ module.exports.signUp = async (req,res)=> {
         const token = jwt.sign({user},JWT_SECRET);
         return res.json(successMessage({
             message : "Account created successfully",
-            user,
-            token
+            data : {user,token}
         }));
     }catch(e){
         console.error("signUp Error : ", e);
@@ -56,8 +55,7 @@ module.exports.signIn = async (req,res)=> {
         const token = jwt.sign({user},JWT_SECRET);
         return res.json(successMessage({
             message : "Signed in successfully",
-            user,
-            token
+            data : {user,token}
         }));
     }catch(e){
         console.error("signIn Error : ", e);

@@ -1,5 +1,15 @@
 const mongoose = require("mongoose");
 const { busStatuses, busTypes } = require("../config/constants");
+const { isMongoId } = require("../utils/mongoUtils");
+const locationSchema = require("./locationSchema");
+
+const busInfoSchema = new mongoose.Schema({
+    busType : {
+        type : String,
+        enum : busTypes,
+        default: busStatuses[0]
+    }
+})
 
 const busSchema = new mongoose.Schema({
     vehNo : {
@@ -8,11 +18,8 @@ const busSchema = new mongoose.Schema({
         unique : true
     },
     info : {
-        busType : {
-            type : String,
-            enum : busTypes,
-            default: busStatuses[0]
-        },
+        type : busInfoSchema,
+        required : true
     },
     status : {
         type: String,
@@ -24,9 +31,7 @@ const busSchema = new mongoose.Schema({
         ref : "BusRoute"
     },
     location : {
-        latitue : Number,
-        longitude : Number,
-        address : String
+        type : locationSchema,
     },
     rating : Number,
 },{

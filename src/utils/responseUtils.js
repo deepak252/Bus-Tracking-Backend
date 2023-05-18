@@ -1,6 +1,7 @@
-exports.successMessage=(data)=>{
+exports.successMessage=({message, data})=>{
     return {
         success : true,
+        message,
         data
     }
 }

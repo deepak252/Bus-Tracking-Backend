@@ -1,18 +1,15 @@
 const mongoose = require("mongoose");
+const locationSchema = require("./locationSchema");
 
 const stopSchema = new mongoose.Schema({
-    stopId : {
+    stopNo : {
         type : String, 
-        required : [true,"Bus Stop Id is required"],
+        required : [true,"Stop number is required"],
         unique : true
     },
     name : {
         type : String,
-        required : [true,"Bus Stop name is required"],
-    },
-    rating : {
-        type : Number,
-        default : 0
+        required : [true,"Stop name is required"],
     },
     routes : [
         {
@@ -21,9 +18,8 @@ const stopSchema = new mongoose.Schema({
         }
     ],
     location : {
-        latitue : Number,
-        longitude : Number,
-        address : String
+        type : locationSchema,
+        required : [true, "Stop location is required"]
     }
 },{
     timestamps : true

@@ -1,14 +1,13 @@
-const { getRouteByRouteNo } = require("../helper/busStopRouteHelper");
+const { getRouteByRouteNo, addStopToRoute, removeStopFromRoute, removeStopFromAllRoutes, removeRouteFromAllStops } = require("../helper/busStopRouteHelper");
 const {  BusRoute } = require("../models");
 const { errorMessage, successMessage } = require("../utils/responseUtils");
 
 module.exports.createBusRoute = async(req,res) =>{
     try{
-        const {routeNo, name, timings, stopIds} = req.body;
+        const {routeNo, name, timings} = req.body;
         let busRoute = new BusRoute({
             routeNo,  //eg. 901_UP, 901_DOWN
             name,
-            stopIds,
             timings
         });
         let error = busRoute.validateSync();
@@ -34,7 +33,7 @@ module.exports.createBusRoute = async(req,res) =>{
 module.exports.getBusRoute = async(req,res) =>{
     try{
         const {routeNo} = req.query;
-        let result = await getRouteByRouteNo(routeNo, {populate : true});
+        let result = await getRouteByRouteNo(routeNo, true);
         return res.json(successMessage({data : result}));
     }catch(e){
         console.error("getBusRoute Error : ", e);
@@ -44,15 +43,14 @@ module.exports.getBusRoute = async(req,res) =>{
 
 module.exports.updateBusRoute = async(req,res) =>{
     try{
-        const {routeNo, name, timings, stopIds} = req.body;
+        const {routeNo, name, timings} = req.body;
         if(!routeNo){
             throw new Error("Route number is required");
         }
         let result = await BusRoute.findOneAndUpdate({routeNo},{
             routeNo,
             name,
-            timings,
-            stopIds
+            timings
         },{runValidators : true, new : true});
         if(!result){
             throw new Error(`No Bus Route found with routeNo : ${routeNo}`);
@@ -75,19 +73,47 @@ module.exports.updateBusRoute = async(req,res) =>{
 module.exports.deleteBusRoute = async(req,res) =>{
     try{
         const {routeNo} = req.query;
-        if(!routeNo){
-            throw new Error("Route number is required");
-        }
-        let result = await BusRoute.findOneAndDelete({routeNo});
-        if(!result){
-            throw new Error(`No Bus Route found with routeNo : ${routeNo}`);
-        }
+        let result = await removeRouteFromAllStops(routeNo, true);
+        
         return res.json(successMessage({
             message : "Bus Route deleted successfully",
             data : result
         }));
     }catch(e){
         console.error("deleteBusRoute Error : ", e);
+        return res.json(errorMessage(e.message || e));
+    }
+}
+
+module.exports.addBusStopToRoute = async(req,res) =>{
+    try{
+        const {routeNo, stopNo, index, duration} = req.body;
+        let result = await addStopToRoute(routeNo, stopNo, index, duration)
+        return res.json(successMessage({data : result}));
+    }catch(e){
+        console.error("addBusStopToRoute Error : ", e);
+        return res.json(errorMessage(e.message || e));
+    }
+}
+
+module.exports.removeBusStopFromRoute = async(req,res) =>{
+    try{
+        const {routeNo, stopNo} = req.body;
+        let result = await removeStopFromRoute(routeNo,stopNo)
+        return res.json(successMessage({data : result}));
+    }catch(e){
+        console.error("removeBusStopFromRoute Error : ", e);
+        return res.json(errorMessage(e.message || e));
+    }
+}
+
+module.exports.removeBusStopFromAllRoutes = async(req,res) =>{
+    try{
+        const {stopNo} = req.body;
+        let result = await removeStopFromAllRoutes(stopNo);
+        return res.json(successMessage({data : result}));
+    }catch(e){
+        console.error("removeBusStopFromRoute Error : ", e);
         return res.json(errorMessage(e.message || e));
     }
 }

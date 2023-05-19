@@ -1,16 +1,14 @@
-const { getBusByVehNo } = require("../helper/busStopRouteHelper");
+const { getBusByVehNo, getAllBusesForStop, getAllBusesForRoute } = require("../helper/busStopRouteHelper");
 const { Bus } = require("../models");
 const { successMessage, errorMessage } = require("../utils/responseUtils");
 
 module.exports.createBus = async(req,res)=>{
     try{
-        const {vehNo, busType, routeId, status, location} = req.body;
+        const {vehNo, info, route, status, location} = req.body;
         let bus = new Bus({
             vehNo,
-            info : {
-                busType
-            },
-            route : routeId, // Mongoose Object Id
+            info,
+            route, // Mongoose Object Id
             status,
             location
         });
@@ -36,7 +34,7 @@ module.exports.createBus = async(req,res)=>{
 module.exports.getBusByVehicleNo = async(req,res)=>{
     try{
         const {vehNo} = req.query;
-        let result = await getBusByVehNo(vehNo,{populate : true});
+        let result = await getBusByVehNo(vehNo,true);
         return res.json(successMessage({data : result}));
     }catch(e){
         console.error("getBusByVehicleNo Error : ", e);
@@ -47,16 +45,14 @@ module.exports.getBusByVehicleNo = async(req,res)=>{
 
 module.exports.updateBus = async(req,res) =>{
     try{
-        const {vehNo, busType, routeId, status,location} = req.body;
+        const {vehNo, info, route, status,location} = req.body;
         if(!vehNo){
             throw new Error("Vehicle number is required");
         }
         let result = await Bus.findOneAndUpdate({vehNo},{
             vehNo,
-            info : {
-                busType
-            },
-            route : routeId, // Mongoose Object Id
+            info,
+            route, // Mongoose Object Id
             status,
             location
         },{runValidators : true, new : true});
@@ -93,6 +89,28 @@ module.exports.deleteBus = async(req,res) =>{
         }));
     }catch(e){
         console.error("deleteBus Error : ", e);
+        return res.json(errorMessage(e.message || e));
+    }
+}
+
+module.exports.getAllBusesForBusStop = async(req,res) =>{
+    try{
+        const {stopNo} = req.query;
+        let result = await getAllBusesForStop(stopNo)
+        return res.json(successMessage({data : result}));
+    }catch(e){
+        console.error("getAllBusesForBusStop Error : ", e);
+        return res.json(errorMessage(e.message || e));
+    }
+}
+
+module.exports.getAllBusesForBusRoute = async(req,res) =>{
+    try{
+        const {routeNo} = req.query;
+        let result = await getAllBusesForRoute(routeNo)
+        return res.json(successMessage({data : result}));
+    }catch(e){
+        console.error("getAllBusesForBusRoute Error : ", e);
         return res.json(errorMessage(e.message || e));
     }
 }

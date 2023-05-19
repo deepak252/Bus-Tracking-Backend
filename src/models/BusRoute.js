@@ -17,7 +17,10 @@ const routeSchema = new mongoose.Schema({
                 type : mongoose.Schema.Types.ObjectId,
                 ref : "BusStop"
             },
-            duration : Number  // Previous stop to current stop
+            duration : {
+                type : Number,
+                required : [true, "Duration is required"]
+            }  // Previous stop to current stop
         }
     ],
     timings : [

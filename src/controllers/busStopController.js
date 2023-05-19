@@ -1,14 +1,13 @@
-const { getStopByStopNo } = require("../helper/busStopRouteHelper");
+const { getStopByStopNo, removeStopFromAllRoutes, removeRouteFromAllStops } = require("../helper/busStopRouteHelper");
 const { BusStop } = require("../models");
 const { errorMessage, successMessage } = require("../utils/responseUtils");
 
 module.exports.createBusStop = async(req,res) =>{
     try{
-        const {stopNo, name, routes, location} = req.body;
+        const {stopNo, name,  location} = req.body;
         let busStop = new BusStop({
             stopNo,
             name,
-            routes,
             location
         });
         let error = busStop.validateSync();
@@ -34,7 +33,7 @@ module.exports.createBusStop = async(req,res) =>{
 module.exports.getBusStop = async(req,res) =>{
     try{
         const {stopNo} = req.query;
-        let result = await getStopByStopNo(stopNo, {populate : true})
+        let result = await getStopByStopNo(stopNo, true)
         return res.json(successMessage({data : result}));
     }catch(e){
         console.error("getBusStop Error : ", e);
@@ -79,19 +78,25 @@ module.exports.updateBusStop = async(req,res) =>{
 module.exports.deleteBusStop = async(req,res) =>{
     try{
         const {stopNo} = req.query;
-        if(!stopNo){
-            throw new Error("Stop number is required");
-        }
-        let result = await BusStop.findOneAndDelete({stopNo});
-        if(!result){
-            throw new Error(`No Bus Stop found with stopNo : ${stopNo}`);
-        }
+        let result  = await removeStopFromAllRoutes(stopNo, true);
+
         return res.json(successMessage({
             message : "Bus Stop deleted successfully",
             data : result
         }));
     }catch(e){
         console.error("deleteBusStop Error : ", e);
+        return res.json(errorMessage(e.message || e));
+    }
+}
+
+module.exports.removeBusRouteFromAllStops = async(req,res) =>{
+    try{
+        const {routeNo} = req.body;
+        let result = await removeRouteFromAllStops(routeNo);
+        return res.json(successMessage({data : result}));
+    }catch(e){
+        console.error("removeBusStopFromRoute Error : ", e);
         return res.json(errorMessage(e.message || e));
     }
 }

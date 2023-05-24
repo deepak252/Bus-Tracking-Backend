@@ -10,6 +10,6 @@ const locationSchema = mongoose.Schema({
         required : [true,"Longitude is required"],
     },
     address : String
-})
+});
 
 module.exports = locationSchema;

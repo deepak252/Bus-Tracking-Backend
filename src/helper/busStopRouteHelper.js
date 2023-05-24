@@ -5,8 +5,17 @@ const getBusByVehNo = async (vehNo, populate)=>{
         throw new Error("vehNo is required");
     }
     const result = populate 
-        ?  await Bus.findOne({vehNo}).populate("route")
-        :  await Bus.findOne({vehNo});
+        ?  await Bus.findOne({vehNo})
+            .populate({
+                path: 'route',
+                populate: {
+                  path: 'stops.stop',
+                },
+            })
+        :  await Bus.findOne({vehNo})
+            .populate({
+                path: 'route',
+            });
 
     if(!result){
         throw new Error(`No Bus found with vehNo : ${vehNo}`);
@@ -114,7 +123,8 @@ const getAllBusesForRoute = async (routeNo) => {
     const buses = await Bus.find({
         route : route._id
     });
-    return {route, buses};
+    // return {route, buses};
+    return buses;
 };
 
 
@@ -126,8 +136,10 @@ const getAllBusesForStop = async (stopNo) => {
         route : {
             $in : stop.routes || []
         }
-    }).populate('route');
-    return {stop, buses};
+    });
+    // .populate('route')
+    // return {stop, buses};
+    return buses;
 };
 
 /// Call on BusStop deletion
@@ -147,7 +159,7 @@ const removeStopFromAllRoutes = async (stopNo, deleteBusStop =false) => {
         );
     }
 
-    if(deleteBusRoute){
+    if(deleteBusStop){
         stop = await BusStop.findOneAndDelete({stopNo});
     }else{
         stop.routes = [];

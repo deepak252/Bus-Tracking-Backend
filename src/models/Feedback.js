@@ -9,6 +9,10 @@ const routeFeedbackSchema = new mongoose.Schema({
         type : mongoose.Schema.Types.ObjectId,
         ref : "BusRoute"
     },
+    driver : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "Driver"
+    },
     rating : {
         type : Number,
         min : 1,

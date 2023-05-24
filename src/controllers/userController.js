@@ -23,35 +23,32 @@ module.exports.getUser = async(req,res)=>{
 }
 
 
-// module.exports.updateUser = async(req,res) =>{
-//     try{
-//         const {id, name, email, phone} = req.body;
-//         if(!id){
-//             throw new Error("userId is required");
-//         }
-//         if(!ObjectId.isValid(userId)){
-//             throw new Error("Invalid userId");
-//         }
-//         let result = await BusStop.findOneAndUpdate({vehNo},{
-//             vehNo,
-//             info : {
-//                 busType
-//             },
-//             routeId, // Mongoose Object Id
-//             status
-//         },{runValidators : true, new : true});
-//         if(!result){
-//             throw new Error("No Bus found with given vehNo");
-//         }
-//         return res.json(successMessage({
-//             message : "Bus updated successfully",
-//             data : result
-//         }));
-//     }catch(e){
-//         console.error("updateUser Error : ", e);
-//         return res.json(errorMessage(e.message || e));
-//     }
-// }
+module.exports.updateUser = async(req,res) =>{
+    try{
+        const {id, name, email, phone} = req.body;
+        if(!id){
+            throw new Error("userId is required");
+        }
+        if(!isMongoId(id)){
+            throw new Error("Invalid userId");
+        }let result = await User.findByIdAndUpdate(id,{
+            name,
+            email,
+            phone
+        },{runValidators : true, new : true});
+        
+        if(!result){
+            throw new Error("User does not exist");
+        }
+        return res.json(successMessage({
+            message : "User updated successfully",
+            data : result
+        }));
+    }catch(e){
+        console.error("updateUser Error : ", e);
+        return res.json(errorMessage(e.message || e));
+    }
+}
 
 
 module.exports.deleteUser = async(req,res) =>{

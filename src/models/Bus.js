@@ -7,7 +7,7 @@ const busInfoSchema = new mongoose.Schema({
     busType : {
         type : String,
         enum : busTypes,
-        default: busStatuses[0]
+        default: busTypes[0]
     }
 })
 
@@ -30,10 +30,13 @@ const busSchema = new mongoose.Schema({
         type : mongoose.Schema.Types.ObjectId,
         ref : "BusRoute"
     },
+    driver : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "Driver"
+    },
     location : {
         type : locationSchema,
-    },
-    rating : Number,
+    }
 },{
     timestamps : true
 });

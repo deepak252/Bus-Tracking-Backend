@@ -2,7 +2,30 @@ const { User } = require("../models");
 const { isMongoId } = require("../utils/mongoUtils");
 const { successMessage, errorMessage } = require("../utils/responseUtils");
 
+/**
+ *  Auth Token Required
+ * */ 
 module.exports.getUser = async(req,res)=>{
+    try{
+        const {_id : userId} = req.user;
+        if(!userId){
+            throw new Error("userId is required");
+        }
+        if(!isMongoId(userId)){
+            throw new Error("Invalid userId");
+        }
+        let result = await User.findById(userId);
+        if(!result){
+            throw new Error("User does not exist");
+        }
+        return res.json(successMessage({data : result}));
+    }catch(e){
+        console.error("getUser Error : ", e);
+        return res.status(400).json(errorMessage(e.message || e));
+    }
+}
+
+module.exports.getUserById = async(req,res)=>{
     try{
         const {userId} = req.params;
         if(!userId){

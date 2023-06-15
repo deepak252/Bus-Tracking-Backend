@@ -12,7 +12,7 @@ const busStopSchemaForRoute = mongoose.Schema({
     }  // Previous stop to current stop
 });
 
-const busTimingSchemaForRoute = mongoose.Schema({
+const scheduleSchema = mongoose.Schema({
     day : {
         type: String,
         enum: days,
@@ -37,7 +37,7 @@ const routeSchema = new mongoose.Schema({
         required : [true,"Route name is required"],
     },
     stops : [busStopSchemaForRoute],
-    timings : [busTimingSchemaForRoute],
+    schedule : [scheduleSchema],
     rating : {
         type : Number,
         default : 0

@@ -41,6 +41,40 @@ module.exports.getBusStop = async(req,res) =>{
     }
 }
 
+module.exports.getAllBusStops = async(req,res) =>{
+    try{
+        let result = await BusStop.find().populate("routes");
+        return res.json(successMessage({data : result}));
+    }catch(e){
+        console.error("getAllBusStops Error : ", e);
+        return res.json(errorMessage(e.message || e));
+    }
+}
+
+// Get all bus stops in the radius of 2 km
+module.exports.getNearbyBusStops = async(req,res) =>{
+    try{
+        const {lat, lng} = req.query;
+        if(!lat||!lng){
+            throw "lat & lng are required!"
+        }
+        if(isNaN(lat) || isNaN(lng)){
+            throw "Invalid lat or lng"
+        }
+        const result = await BusStop.find({
+            location: {
+                $geoWithin: {
+                    $centerSphere: [[lat, lng], 5 / 6378.1], // Convert radius to radians (Earth's radius in kilometers is approximately 6378.1)
+                },
+            },
+        }).populate("routes");
+        return res.json(successMessage({data : result}));
+    }catch(e){
+        console.error("getNearbyBusStops Error : ", e);
+        return res.json(errorMessage(e.message || e));
+    }
+}
+
 module.exports.updateBusStop = async(req,res) =>{
     try{
         const {stopNo, name, location} = req.body;

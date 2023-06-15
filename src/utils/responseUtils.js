@@ -6,9 +6,9 @@ exports.successMessage=({message, data})=>{
     }
 }
 
-exports.errorMessage = ( error) => {
+exports.errorMessage = ( message) => {
     return {
         success: false,
-        error
+        message
     }
 }

@@ -4,11 +4,11 @@ const { errorMessage, successMessage } = require("../utils/responseUtils");
 
 module.exports.createBusRoute = async(req,res) =>{
     try{
-        const {routeNo, name, timings} = req.body;
+        const {routeNo, name, schedule} = req.body;
         let busRoute = new BusRoute({
             routeNo,  //eg. 901_UP, 901_DOWN
             name,
-            timings
+            schedule
         });
         let error = busRoute.validateSync();
         if(error){
@@ -41,16 +41,26 @@ module.exports.getBusRoute = async(req,res) =>{
     }
 }
 
+module.exports.getAllBusRoutes = async(req,res) =>{
+    try{
+        let result = await BusRoute.find().populate("stops.stop");
+        return res.json(successMessage({data : result}));
+    }catch(e){
+        console.error("getAllBusRoutes Error : ", e);
+        return res.json(errorMessage(e.message || e));
+    }
+}
+
 module.exports.updateBusRoute = async(req,res) =>{
     try{
-        const {routeNo, name, timings} = req.body;
+        const {routeNo, name, schedule} = req.body;
         if(!routeNo){
             throw new Error("Route number is required");
         }
         let result = await BusRoute.findOneAndUpdate({routeNo},{
             routeNo,
             name,
-            timings
+            schedule
         },{runValidators : true, new : true});
         if(!result){
             throw new Error(`No Bus Route found with routeNo : ${routeNo}`);

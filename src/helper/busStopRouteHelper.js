@@ -122,7 +122,7 @@ const getAllBusesForRoute = async (routeNo) => {
     let route = await getRouteByRouteNo(routeNo);
     const buses = await Bus.find({
         route : route._id
-    });
+    }).populate('route');
     // return {route, buses};
     return buses;
 };
@@ -136,7 +136,7 @@ const getAllBusesForStop = async (stopNo) => {
         route : {
             $in : stop.routes || []
         }
-    });
+    }).populate('route');
     // .populate('route')
     // return {stop, buses};
     return buses;

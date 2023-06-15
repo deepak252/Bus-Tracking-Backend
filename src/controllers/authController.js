@@ -59,7 +59,7 @@ module.exports.signInUser = async (req,res)=> {
         }));
     }catch(e){
         console.error("signInUser Error : ", e);
-        return res.json(errorMessage(e.message || e));
+        return res.status(400).json(errorMessage(e.message || e));
     }
 }
 
@@ -91,7 +91,7 @@ module.exports.resetUserPassword = async (req,res)=> {
         }));
     }catch(e){
         console.error("resetUserPassword Error : ", e);
-        return res.json(errorMessage(e.message || e));
+        return res.status(400).json(errorMessage(e.message || e));
     }
 }
 

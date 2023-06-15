@@ -93,6 +93,43 @@ module.exports.deleteBus = async(req,res) =>{
     }
 }
 
+module.exports.getAllBuses = async(req,res) =>{
+    try{
+        const result = await Bus.find().populate('route');
+        return res.json(successMessage({data : result}));
+    }catch(e){
+        console.error("getAllBuses Error : ", e);
+        return res.json(errorMessage(e.message || e));
+    }
+}
+
+
+// Get all buses in the radius of 2 km
+module.exports.getNearbyBuses = async(req,res) =>{
+    try{
+        const {lat, lng} = req.query;
+        if(!lat||!lng){
+            throw "lat & lng are required!"
+        }
+        if(isNaN(lat) || isNaN(lng)){
+            throw "Invalid lat or lng"
+        }
+        const result = await Bus.find({
+            route : {$ne : null},
+            location: {
+                $geoWithin: {
+                    $centerSphere: [[lat, lng], 2 / 6378.1], // Convert radius to radians (Earth's radius in kilometers is approximately 6378.1)
+                },
+            },
+        }).populate('route');
+        return res.json(successMessage({data : result}));
+    }catch(e){
+        console.error("getNearbyBuses Error : ", e);
+        return res.json(errorMessage(e.message || e));
+    }
+}
+
+
 module.exports.getAllBusesForBusStop = async(req,res) =>{
     try{
         const {stopNo} = req.query;

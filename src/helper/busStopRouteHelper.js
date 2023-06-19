@@ -12,10 +12,10 @@ const getBusByVehNo = async (vehNo, populate)=>{
                   path: 'stops.stop',
                 },
             })
-        :  await Bus.findOne({vehNo})
-            .populate({
-                path: 'route',
-            });
+        :  await Bus.findOne({vehNo});
+            // .populate({
+            //     path: 'route',
+            // });
 
     if(!result){
         throw new Error(`No Bus found with vehNo : ${vehNo}`);

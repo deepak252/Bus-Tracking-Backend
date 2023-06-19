@@ -1,10 +1,10 @@
 
-module.exports.validateEmail = (email)=>{
-    // if(!email || !email.trim().length){
-    //     return "Email is required"
-    // }
-    // if(!(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/).test(email)){
-    //     return "Invalid email"
-    // }
-    // return "Test email"
+
+module.exports.validateLatLng = (lat,lng)=>{
+    if(!lat||!lng){
+        throw new Error("lat & lng are required!");
+    }
+    if(isNaN(lat) || isNaN(lng)){
+        throw new Error( "Invalid lat or lng");
+    }
 }

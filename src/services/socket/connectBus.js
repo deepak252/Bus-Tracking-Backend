@@ -1,80 +1,92 @@
-const { errorMessage, successMessage } = require("../../utils/responseUtils");
+const { getBusByVehNo, getRouteByRouteNo } = require("../../helper/busStopRouteHelper");
+const { errorMessage, successMessage } = require("../../utils/responseUtil");
+const { validateLatLng } = require("../../utils/validator");
+const { addLiveBusToRoute, updateLiveBusLocation, removeLiveBusFromRoute} = require("../../helper/liveRouteHelper");
+const { BusRoute } = require("../../models");
 
 module.exports = (io)=>{
     const busNamespace = io.of("/bus");
     const userNamespace = io.of("/user");
 
-    busNamespace.use((socket,next)=>{
-        const { busNo } = socket.handshake.query;
-        if (!busNo) {
-            next(new Error("busNo is required"))
-        }else{
+    busNamespace.use(async(socket,next)=>{
+        const { vehNo } = socket.handshake.query;
+        try{
+            const bus = await getBusByVehNo(vehNo, false);
+            socket.bus = bus;
             next();
+        }catch(e){
+            next(new Error(`Error : ${e.message || e}`))
         }
     });
 
     busNamespace.on("connect",(socket)=>{
-        const { busNo } = socket.handshake.query;
-        console.log(`Bus Connected(${socket.id}) : ${busNo}`);
+        const bus = socket.bus;
+        const { vehNo } = bus;
+        console.log(`Bus Connected(${socket.id}) : ${vehNo}`);
        
-        socket.join(busNo);
+        socket.join(vehNo);
+        // Bus Join Route
+        socket.on("bus:joinRoute",async ({routeNo})=>{
+            try{
+                console.log(`Bus(${vehNo}) joinRoute(${routeNo})`);
+                const route = await getRouteByRouteNo(routeNo, false); // Check route exists
+                socket.routeNo = routeNo;
+                const liveRoute = addLiveBusToRoute(routeNo, bus);
+                socket.join(routeNo);
+                busNamespace.to(routeNo).emit("bus:routeUpdated",liveRoute);
+                userNamespace.to(routeNo).emit("bus:routeUpdated",liveRoute);
 
-        socket.on("bus:joinRoute",({routeNo})=>{
-            if(!routeNo){
-                socket.emit("error",errorMessage("routeNo is required"));
-                return;
+            }catch(e){
+                socket.emit("error",errorMessage(e.message || e));
             }
-            console.log(`Bus(${busNo}) joinRoute(${routeNo})`);
-            socket.routeNo = routeNo;
-            socket.join(routeNo);
             
         });
-
+        // Update Bus Location
         socket.on("bus:updateLocation",({lat, lng})=>{
-            if(!lat || !lng){
-                socket.emit("error",errorMessage("lat,lng are required"));
-                return;
+            try{
+                console.log(`Bus(${vehNo}), updateLocation(${lat},${lng})`);
+                validateLatLng(lat,lng);
+                let routeNo = socket.routeNo;
+                const liveBus = updateLiveBusLocation(routeNo,vehNo,lat,lng);
+                busNamespace.to(routeNo).emit("bus:locationUpdated", liveBus);
+                userNamespace.to(routeNo).emit("bus:locationUpdated", liveBus);
+            }catch(e){
+                socket.emit("error",errorMessage(e.message || e));
             }
-            console.log(`Bus(${busNo}), updateLocation(${lat},${lng})`);
-            let routeNo = socket.routeNo;
-            if(!routeNo){
-                socket.emit("error",errorMessage("Couldn't find route"));
-                return;
-            }
-            const data = successMessage({
-                data : {
-                    busNo,
-                    location: {lat,lng}
-                }
-            });
-            busNamespace.to(routeNo).emit("bus:locationUpdated",data);
-            userNamespace.to(routeNo).emit("bus:locationUpdated",data);
-            // Get all active buses in route
-            // track bus location
         });
-
-        socket.on("bus:locationUpdated",(data)=>{
+        // Bus Route Updated
+        socket.on("bus:routeUpdated",(data)=>{
             // On location change for buses in current route
-            console.log(`Bus(${busNo}) locationUpdated(${data})`);
+            console.log(`Bus(${vehNo}) locationUpdated(${data})`);
         });
-
-        socket.on("bus:leaveRoute",({routeNo})=>{
-            console.log(`Bus(${busNo}) leaveRoute(${routeNo})`);
-            const data = successMessage({
-                data : {
-                    busNo,
-                    location: null
-                }
-            });
-            busNamespace.to(routeNo).emit("bus:locationUpdated",data);
-            userNamespace.to(routeNo).emit("bus:locationUpdated",data);
-            socket.leave(routeNo);
+        
+        socket.on("bus:leaveRoute",()=>{
+            try{
+                console.log(`Bus(${vehNo}) leaveRoute(${socket.routeNo})`);
+                const routeNo = socket.routeNo;
+                
+                const liveRoute = removeLiveBusFromRoute(routeNo,vehNo)
+                busNamespace.to(routeNo).emit("bus:routeUpdated",liveRoute);
+                userNamespace.to(routeNo).emit("bus:routeUpdated",liveRoute);
+                socket.leave(routeNo);
+            }catch(e){
+                socket.emit("error",errorMessage(e.message || e));
+            }
         });
 
         socket.on("disconnect",()=>{
-            console.log(`Bus Disconnected(${socket.id}) `, busNo);
+            try{
+                console.log(`Bus Disconnected(${socket.id}) `, vehNo);
+                const routeNo = socket.routeNo;
+                const liveRoute = removeLiveBusFromRoute(routeNo,vehNo)
+                busNamespace.to(routeNo).emit("bus:routeUpdated",liveRoute);
+                userNamespace.to(routeNo).emit("bus:routeUpdated",liveRoute);
+                socket.leave(routeNo);
+            }catch(e){
+                socket.emit("error",errorMessage(e.message || e));
+            }
         });
-    })
+    });
 
 
 }

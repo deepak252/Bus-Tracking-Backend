@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { busStatuses, busTypes } = require("../config/constants");
-const { isMongoId } = require("../utils/mongoUtils");
+const { isMongoId } = require("../utils/mongoUtil");
 const locationSchema = require("./locationSchema");
 
 const busInfoSchema = new mongoose.Schema({

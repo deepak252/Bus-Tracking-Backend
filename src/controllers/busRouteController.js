@@ -1,6 +1,6 @@
 const { getRouteByRouteNo, addStopToRoute, removeStopFromRoute, removeStopFromAllRoutes, removeRouteFromAllStops } = require("../helper/busStopRouteHelper");
 const {  BusRoute } = require("../models");
-const { errorMessage, successMessage } = require("../utils/responseUtils");
+const { errorMessage, successMessage } = require("../utils/responseUtil");
 
 module.exports.createBusRoute = async(req,res) =>{
     try{

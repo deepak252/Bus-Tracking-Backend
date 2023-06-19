@@ -1,6 +1,9 @@
 const { getBusByVehNo, getAllBusesForStop, getAllBusesForRoute } = require("../helper/busStopRouteHelper");
-const { Bus } = require("../models");
-const { successMessage, errorMessage } = require("../utils/responseUtils");
+const { getAllLiveRoutes } = require("../helper/liveRouteHelper");
+const { Bus, BusRoute } = require("../models");
+const { calculateDistance } = require("../utils/locationUtil");
+const { successMessage, errorMessage } = require("../utils/responseUtil");
+const { validateLatLng } = require("../utils/validator");
 
 module.exports.createBus = async(req,res)=>{
     try{
@@ -108,21 +111,59 @@ module.exports.getAllBuses = async(req,res) =>{
 module.exports.getNearbyBuses = async(req,res) =>{
     try{
         const {lat, lng} = req.query;
-        if(!lat||!lng){
-            throw "lat & lng are required!"
+        const liveBusRoutes = getAllLiveRoutes();
+        let nearbyBuses = [];
+        // const routeNumbers = Object.keys(liveBusRoutes);
+        // console.log(routeNumbers)
+
+        for(const key in liveBusRoutes){ // Key ~ routeNo
+            const liveBuses = liveBusRoutes[key];
+            for(let i=0;i<liveBuses.length;i++){
+                const bus = liveBuses[i].toObject();
+                if(bus.location){
+                    const {lat : lat2,lng : lng2} = bus.location;
+                    const distInMetres = calculateDistance(lat,lng, lat2,lng2);
+                    console.log({distInMetres});
+                    if(distInMetres<2000){
+                        // Add all buses in the range of 2 km
+                        nearbyBuses.push({
+                            ...bus,
+                            routeNo : key
+                        });
+                    }
+                }
+            }
         }
-        if(isNaN(lat) || isNaN(lng)){
-            throw "Invalid lat or lng"
+        let routeNumbers = nearbyBuses.map((e)=>e.routeNo);
+        routeNumbers = [...new Set(routeNumbers)];
+        const routes = await BusRoute.find({
+            routeNo : {$in : routeNumbers}
+        }).lean();
+
+        let filteredNearbyBuses = [];
+        for(let i=0;i<nearbyBuses.length;i++){
+            let nearbyBus = nearbyBuses[i];
+            let route = routes.find((e)=>e.routeNo==nearbyBus.routeNo);
+            if(route){
+                delete nearbyBus["routeNo"];
+                filteredNearbyBuses.push({
+                    ...nearbyBus,
+                    route
+                })
+            }
         }
-        const result = await Bus.find({
-            route : {$ne : null},
-            location: {
-                $geoWithin: {
-                    $centerSphere: [[lat, lng], 2 / 6378.1], // Convert radius to radians (Earth's radius in kilometers is approximately 6378.1)
-                },
-            },
-        }).populate('route');
-        return res.json(successMessage({data : result}));
+        return res.json(successMessage({data : filteredNearbyBuses}));
+
+        // validateLatLng(lat,lng);
+        // const result = await Bus.find({
+        //     route : {$ne : null},
+        //     location: {
+        //         $geoWithin: {
+        //             $centerSphere: [[lat, lng], 2 / 6378.1], // Convert radius to radians (Earth's radius in kilometers is approximately 6378.1)
+        //         },
+        //     },
+        // }).populate('route');
+        // return res.json(successMessage({data : result}));
     }catch(e){
         console.error("getNearbyBuses Error : ", e);
         return res.json(errorMessage(e.message || e));
@@ -133,7 +174,7 @@ module.exports.getNearbyBuses = async(req,res) =>{
 module.exports.getAllBusesForBusStop = async(req,res) =>{
     try{
         const {stopNo} = req.query;
-        let result = await getAllBusesForStop(stopNo)
+        let result = await getAllBusesForStop(stopNo);
         return res.json(successMessage({data : result}));
     }catch(e){
         console.error("getAllBusesForBusStop Error : ", e);

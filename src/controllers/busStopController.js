@@ -1,6 +1,7 @@
 const { getStopByStopNo, removeStopFromAllRoutes, removeRouteFromAllStops } = require("../helper/busStopRouteHelper");
 const { BusStop } = require("../models");
-const { errorMessage, successMessage } = require("../utils/responseUtils");
+const { errorMessage, successMessage } = require("../utils/responseUtil");
+const { validateLatLng } = require("../utils/validator");
 
 module.exports.createBusStop = async(req,res) =>{
     try{
@@ -55,16 +56,11 @@ module.exports.getAllBusStops = async(req,res) =>{
 module.exports.getNearbyBusStops = async(req,res) =>{
     try{
         const {lat, lng} = req.query;
-        if(!lat||!lng){
-            throw "lat & lng are required!"
-        }
-        if(isNaN(lat) || isNaN(lng)){
-            throw "Invalid lat or lng"
-        }
+        validateLatLng(lat,lng);
         const result = await BusStop.find({
             location: {
                 $geoWithin: {
-                    $centerSphere: [[lat, lng], 5 / 6378.1], // Convert radius to radians (Earth's radius in kilometers is approximately 6378.1)
+                    $centerSphere: [[lat, lng], 1 / 6378.1], // Convert radius to radians (Earth's radius in kilometers is approximately 6378.1)
                 },
             },
         }).populate("routes");

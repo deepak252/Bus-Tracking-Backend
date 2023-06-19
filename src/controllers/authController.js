@@ -1,5 +1,5 @@
 const {User, Driver} = require("../models");
-const { errorMessage, successMessage } = require("../utils/responseUtils");
+const { errorMessage, successMessage } = require("../utils/responseUtil");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { regex } = require("../config/constants");

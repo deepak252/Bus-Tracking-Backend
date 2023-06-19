@@ -16,7 +16,7 @@ const Day = Object.freeze({
 
 const BusStatus = Object.freeze({
     na : "na",
-    inTransit : "in_transit",
+    in_route : "in_route",
     delayed : "delayed",
     cancelled : "cancelled",
     breakDown : "break_down",

@@ -1,7 +1,7 @@
 const { verifyToken } = require("../../helper/authHelper");
 const { errorMessage } = require("../../utils/responseUtil");
-const { getLiveRoute } = require("../../helper/liveRouteHelper");
-const { getRouteByRouteNo } = require("../../helper/busStopRouteHelper");
+const { getLiveRoute, getLiveBus } = require("../../helper/liveRouteHelper");
+const { getRouteByRouteNo, getBusByVehNo } = require("../../helper/busStopRouteHelper");
 
 
 module.exports = (io)=>{
@@ -26,25 +26,32 @@ module.exports = (io)=>{
         const userId = user.id;
         console.log(`User Connected(${socket.id}) : ${userId}`);
 
-        // socket.on("joinBus",({busNo})=>{
-        //     if(!busNo){
-        //         socket.emit("error",errorMessage("busNo is required"));
-        //         return;
-        //     }
-        //     console.log(`User(${userId}) joinBus(${busNo})`);
-        //     socket.join(busNo);
-        // });
-
         socket.on("user:joinRoute",async ({routeNo})=>{
             try{
                 console.log(`User(${userId}) joinRoute(routeNo = ${routeNo})`);
-                // if(!routeNo){
-                //     throw new Error("routeNo is required");
-                // }
+                
                 const route = await getRouteByRouteNo(routeNo, false);
                 socket.join(routeNo);
                 // socket.to(routeNo).emit("user:routeJoined", getLiveRoute(routeNo));
                 socket.emit("user:routeJoined", getLiveRoute(routeNo));
+            }catch(e){
+                socket.emit("error",errorMessage(e.message || e));
+            }
+        });
+
+        socket.on("user:joinBus",async ({routeNo, vehNo})=>{
+            try{
+                console.log(`User(${userId}) joinBus(routeNo = ${routeNo}, vehNo = ${vehNo})`);
+                let bus = await getBusByVehNo(vehNo, false);
+                const route = await getRouteByRouteNo(routeNo, false);
+
+                bus = getLiveBus(routeNo, vehNo);
+                if(!bus){
+                    throw new Error("Bus not connected!");
+                }
+                socket.join(`${routeNo}/${vehNo}`);
+                // socket.to(routeNo).emit("user:routeJoined", getLiveRoute(routeNo));
+                socket.emit("user:busJoined", bus);
             }catch(e){
                 socket.emit("error",errorMessage(e.message || e));
             }
@@ -58,6 +65,7 @@ module.exports = (io)=>{
 
         socket.on("disconnect",()=>{
             console.log(`User Disconnected(${socket.id}) `, userId);
+            // socket.leave(routeNo);
         });
 
     })

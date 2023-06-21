@@ -50,6 +50,20 @@ const getStopByStopNo = async (stopNo, populate)=>{
     return result;
 }
 
+const addBusStop = async(stopNo, name, location)=>{
+    let busStop = new BusStop({
+        stopNo,
+        name,
+        location
+    });
+    let error = busStop.validateSync();
+    if(error){
+        throw error;
+    }
+    busStop = await busStop.save();
+    return busStop;
+}
+
 // index starting from 0
 const addStopToRoute = async (routeNo, stopNo, index, duration) => {
     let route = await getRouteByRouteNo(routeNo);
@@ -201,6 +215,7 @@ module.exports = {
     getBusByVehNo,
     getRouteByRouteNo,
     getStopByStopNo,
+    addBusStop,
     addStopToRoute,
     removeStopFromRoute,
     getAllBusesForRoute,

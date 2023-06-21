@@ -34,7 +34,7 @@ const removeLiveBusFromRoute = (routeNo, vehNo)=>{
         throw new Error("Invalid routeNo / vehNo");
     }
     if(liveRoutes[routeNo]){
-        liveRoutes[routeNo] = liveRoutes[routeNo].filter((e) => {
+        liveRoutes[routeNo] = liveRoutes[routeNo]?.filter((e) => {
             return e.vehNo !== vehNo;
         });
     }
@@ -46,7 +46,7 @@ const updateLiveBusLocation = (routeNo, vehNo, lat, lng)=>{
         throw new Error("Invalid routeNo / vehNo");
     }
     
-    let i  = liveRoutes[routeNo].findIndex((bus)=>bus.vehNo === vehNo);
+    let i  = liveRoutes[routeNo]?.findIndex((bus)=>bus.vehNo === vehNo);
     if(i>-1){
         liveRoutes[routeNo][i].location = {lat,lng};
         return liveRoutes[routeNo][i]; // return update bus
@@ -72,8 +72,12 @@ const getLiveRoute = (routeNo)=>{
     return liveRoutes[routeNo] || [];
 }
 
-const getLiveBusIndex = (routeNo, vehNo)=>{
-    return liveRoutes[routeNo].findIndex((bus)=>bus.vehNo === vehNo);
+// const getLiveBusIndex = (routeNo, vehNo)=>{
+//     return liveRoutes[routeNo].findIndex((bus)=>bus.vehNo === vehNo);
+// }
+
+const getLiveBus = (routeNo, vehNo)=>{
+    return liveRoutes[routeNo]?.find((bus)=>bus.vehNo === vehNo);
 }
 
 module.exports = {
@@ -81,5 +85,6 @@ module.exports = {
     updateLiveBusLocation,
     getLiveRoute,
     getAllLiveRoutes,
-    removeLiveBusFromRoute
+    removeLiveBusFromRoute,
+    getLiveBus
 }

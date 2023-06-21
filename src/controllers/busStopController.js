@@ -1,4 +1,4 @@
-const { getStopByStopNo, removeStopFromAllRoutes, removeRouteFromAllStops } = require("../helper/busStopRouteHelper");
+const { getStopByStopNo, removeStopFromAllRoutes, removeRouteFromAllStops, addBusStop } = require("../helper/busStopRouteHelper");
 const { BusStop } = require("../models");
 const { errorMessage, successMessage } = require("../utils/responseUtil");
 const { validateLatLng } = require("../utils/validator");
@@ -6,16 +6,16 @@ const { validateLatLng } = require("../utils/validator");
 module.exports.createBusStop = async(req,res) =>{
     try{
         const {stopNo, name,  location} = req.body;
-        let busStop = new BusStop({
-            stopNo,
-            name,
-            location
-        });
-        let error = busStop.validateSync();
-        if(error){
-            throw error;
-        }
-        busStop = await busStop.save();
+        // let busStop = new BusStop({
+        //     stopNo,
+        //     name,
+        //     location
+        // });
+        // let error = busStop.validateSync();
+        // if(error){
+        //     throw error;
+        // }
+        const busStop = await addBusStop(stopNo, name, location);
         return res.json(successMessage({
             message : "Bus Stop created successfully",
             data : busStop
@@ -26,6 +26,33 @@ module.exports.createBusStop = async(req,res) =>{
             //duplicate key error, unique value
             return res.status(400).json(errorMessage("Bus Stop already exists with given stopNo"));
         }
+        return res.status(400).json(errorMessage(e.message || e));
+    }
+}
+
+
+module.exports.createMultipleBusStops = async(req,res) =>{
+    try{
+        const {stops}= req.body;
+        if(!stops || !Array.isArray(stops)){
+            throw "Stops must be list";
+        }
+        const result = [];
+        for(let i=0;i<stops.length;i++){
+            try{
+                const {stopNo, name,  location} = stops[i];
+                const busStop = await addBusStop(stopNo, name, location);
+                result.push(busStop);
+            }catch(e){
+                console.error("In createMultipleBusStops Error : ", e);
+            }
+        }
+        return res.json(successMessage({
+            message : "Bus Stops created successfully",
+            data : result
+        }));
+    }catch(e){
+        console.error("createMultipleBusStops Error : ", e);
         return res.status(400).json(errorMessage(e.message || e));
     }
 }

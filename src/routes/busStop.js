@@ -2,6 +2,7 @@ const router = require("express").Router();
 const controller = require("../controllers/busStopController");
 
 router.post("/createBusStop",controller.createBusStop);
+router.post("/createMultipleBusStops",controller.createMultipleBusStops);
 router.get("/getBusStop",controller.getBusStop);
 router.get("/getAllBusStops",controller.getAllBusStops);
 router.get("/getNearbyBusStops",controller.getNearbyBusStops);

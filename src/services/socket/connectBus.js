@@ -35,6 +35,7 @@ module.exports = (io)=>{
                 socket.join(routeNo);
                 busNamespace.to(routeNo).emit("bus:routeUpdated",liveRoute);
                 userNamespace.to(routeNo).emit("bus:routeUpdated",liveRoute);
+                userNamespace.to(`${routeNo}/${vehNo}`).emit("bus:routeJoined",bus);
 
             }catch(e){
                 socket.emit("error",errorMessage(e.message || e));
@@ -50,6 +51,7 @@ module.exports = (io)=>{
                 const liveBus = updateLiveBusLocation(routeNo,vehNo,lat,lng);
                 busNamespace.to(routeNo).emit("bus:locationUpdated", liveBus);
                 userNamespace.to(routeNo).emit("bus:locationUpdated", liveBus);
+                userNamespace.to(`${routeNo}/${vehNo}`).emit("bus:locationUpdated",liveBus);
             }catch(e){
                 socket.emit("error",errorMessage(e.message || e));
             }
@@ -69,6 +71,7 @@ module.exports = (io)=>{
                 busNamespace.to(routeNo).emit("bus:routeUpdated",liveRoute);
                 userNamespace.to(routeNo).emit("bus:routeUpdated",liveRoute);
                 socket.leave(routeNo);
+                socket.leave(`${routeNo}/${vehNo}`);
             }catch(e){
                 socket.emit("error",errorMessage(e.message || e));
             }
@@ -82,6 +85,7 @@ module.exports = (io)=>{
                 busNamespace.to(routeNo).emit("bus:routeUpdated",liveRoute);
                 userNamespace.to(routeNo).emit("bus:routeUpdated",liveRoute);
                 socket.leave(routeNo);
+                socket.leave(`${routeNo}/${vehNo}`);
             }catch(e){
                 socket.emit("error",errorMessage(e.message || e));
             }

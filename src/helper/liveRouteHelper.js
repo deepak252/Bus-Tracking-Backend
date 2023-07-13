@@ -16,7 +16,7 @@ const addLiveBusToRoute = (routeNo, bus)=>{
     }
     let res = checkBusLive(bus.vehNo);
     if(res){
-        throw new Error(`Bus vehNo : ${bus.vehNo} already in route : ${routeNo} `);
+        throw new Error(`Bus vehNo : ${bus.vehNo} already in route : ${res} `);
     }
     if(liveRoutes[routeNo]){
         // let i = getLiveBusIndex(routeNo, bus.vehNo);

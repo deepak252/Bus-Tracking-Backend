@@ -22,6 +22,11 @@ const BusStatus = Object.freeze({
     breakDown : "break_down",
 });
 
+const UserType = Object.freeze({
+    passenger : "passenger",
+    driver : "driver",
+});
+
 const BusType = Object.freeze({
     other : "other",
     red : "red",
@@ -38,6 +43,8 @@ module.exports = {
     BusType,
     busTypes : Object.values(BusType),
     BusStatus,
-    busStatuses : Object.values(BusStatus)
+    busStatuses : Object.values(BusStatus),
+    UserType,
+    userTypes : Object.values(UserType)
 }
 

@@ -24,7 +24,8 @@ module.exports = (io)=>{
         const { vehNo } = bus;
         console.log(`Bus Connected(${socket.id}) : ${vehNo}`);
        
-        socket.join(vehNo);
+        // socket.join(vehNo);
+
         // Bus Join Route
         socket.on("bus:joinRoute",async ({routeNo})=>{
             try{
@@ -33,9 +34,9 @@ module.exports = (io)=>{
                 socket.routeNo = routeNo;
                 const liveRoute = addLiveBusToRoute(routeNo, bus);
                 socket.join(routeNo);
-                busNamespace.to(routeNo).emit("bus:routeUpdated",liveRoute);
-                userNamespace.to(routeNo).emit("bus:routeUpdated",liveRoute);
-                userNamespace.to(`${routeNo}/${vehNo}`).emit("bus:routeJoined",bus);
+                busNamespace.to(routeNo).emit("bus:routeUpdated",liveRoute); // emit all buses in route to buses
+                userNamespace.to(routeNo).emit("bus:routeUpdated",liveRoute); // emit all buses in route to users
+                userNamespace.to(`${routeNo}/${vehNo}`).emit("bus:routeJoined",bus); // emit specific bus info to users
 
             }catch(e){
                 socket.emit("error",errorMessage(e.message || e));

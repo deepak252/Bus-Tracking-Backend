@@ -1,8 +1,9 @@
-const {User, Driver} = require("../models");
+// const {User, Driver} = require("../models");
+const {User} = require("../models");
 const { errorMessage, successMessage } = require("../utils/responseUtil");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { regex } = require("../config/constants");
+const { regex, UserType } = require("../config/constants");
 const { JWT_SECRET } = require("../config");
 
 module.exports.registerUser = async (req,res)=> {
@@ -101,8 +102,9 @@ module.exports.resetUserPassword = async (req,res)=> {
 module.exports.registerDriver = async (req,res)=> {
     try{
         const {name, phone, email, password} = req.body;
-        let driver = new Driver({
-            name,phone,email,password
+        let driver = new User({
+            name,phone,email,password, 
+            userType : UserType.driver
         });
         let error = driver.validateSync();
         if(error){
@@ -141,7 +143,7 @@ module.exports.signInDriver = async (req,res)=> {
         if(!regex.email.test(email)){
             throw new Error("Invalid Email");
         }
-        let driver = await Driver.findOne({email});
+        let driver = await User.findOne({email});
         if(!driver || !(await bcryptjs.compare(password, driver.password))){
             throw new Error("Invalid email or password");
         }
@@ -171,7 +173,7 @@ module.exports.resetDriverPassword = async (req,res)=> {
             throw new Error("Password must contain at least 4 characters");
         }
 
-        let driver = await Driver.findOne({email});
+        let driver = await User.findOne({email});
         if(!driver){
             throw new Error("Driver does not exist");
         }

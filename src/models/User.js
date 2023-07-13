@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { regex } = require("../config/constants");
+const { regex, userTypes } = require("../config/constants");
 
 const userSchema = new mongoose.Schema({
     name : {
@@ -27,6 +27,11 @@ const userSchema = new mongoose.Schema({
         type : String,
         trim : true,
         required : [true,"Password is required"]
+    },
+    userType : {
+        type: String,
+        enum: userTypes,
+        default: userTypes[0]
     },
 },{
     timestamps : true

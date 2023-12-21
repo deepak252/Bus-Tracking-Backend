@@ -16,10 +16,15 @@ const Day = Object.freeze({
 
 const BusStatus = Object.freeze({
     na : "na",
-    inTransit : "in_transit",
+    in_route : "in_route",
     delayed : "delayed",
     cancelled : "cancelled",
     breakDown : "break_down",
+});
+
+const UserType = Object.freeze({
+    passenger : "passenger",
+    driver : "driver",
 });
 
 const BusType = Object.freeze({
@@ -38,6 +43,8 @@ module.exports = {
     BusType,
     busTypes : Object.values(BusType),
     BusStatus,
-    busStatuses : Object.values(BusStatus)
+    busStatuses : Object.values(BusStatus),
+    UserType,
+    userTypes : Object.values(UserType)
 }
 

@@ -12,10 +12,10 @@ const getBusByVehNo = async (vehNo, populate)=>{
                   path: 'stops.stop',
                 },
             })
-        :  await Bus.findOne({vehNo})
-            .populate({
-                path: 'route',
-            });
+        :  await Bus.findOne({vehNo});
+            // .populate({
+            //     path: 'route',
+            // });
 
     if(!result){
         throw new Error(`No Bus found with vehNo : ${vehNo}`);
@@ -48,6 +48,20 @@ const getStopByStopNo = async (stopNo, populate)=>{
         throw new Error(`No Bus Stop found with stopNo : ${stopNo}`);
     }
     return result;
+}
+
+const addBusStop = async(stopNo, name, location)=>{
+    let busStop = new BusStop({
+        stopNo,
+        name,
+        location
+    });
+    let error = busStop.validateSync();
+    if(error){
+        throw error;
+    }
+    busStop = await busStop.save();
+    return busStop;
 }
 
 // index starting from 0
@@ -201,6 +215,7 @@ module.exports = {
     getBusByVehNo,
     getRouteByRouteNo,
     getStopByStopNo,
+    addBusStop,
     addStopToRoute,
     removeStopFromRoute,
     getAllBusesForRoute,

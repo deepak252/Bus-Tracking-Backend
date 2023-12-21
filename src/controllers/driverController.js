@@ -1,6 +1,6 @@
 const { Driver } = require("../models");
-const { isMongoId } = require("../utils/mongoUtils");
-const { successMessage, errorMessage } = require("../utils/responseUtils");
+const { isMongoId } = require("../utils/mongoUtil");
+const { successMessage, errorMessage } = require("../utils/responseUtil");
 
 module.exports.getDriver = async(req,res)=>{
     try{
